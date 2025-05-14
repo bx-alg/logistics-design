@@ -21,7 +21,7 @@
       <el-table-column prop="status" label="订单状态" align="center" width="120">
         <template slot-scope="scope">
           <el-tag :type="scope.row.status | statusFilter">
-            {{ scope.row.status | statusLabelFilter }}
+            {{ scope.row.statusName }}
           </el-tag>
         </template>
       </el-table-column>
@@ -40,9 +40,9 @@
       background
       @size-change="handleSizeChange"
       @current-change="handleCurrentChange"
-      :current-page="listQuery.page"
+      :current-page="listQuery.pageNum"
       :page-sizes="[10, 20, 30, 50]"
-      :page-size="listQuery.limit"
+      :page-size="listQuery.pageSize"
       layout="total, sizes, prev, pager, next, jumper"
       :total="total"
       style="margin-top: 20px; text-align: right;"
@@ -51,6 +51,8 @@
 </template>
 
 <script>
+import { getOrderList, deleteOrder } from '@/api/order'
+
 export default {
   name: 'OrderList',
   filters: {
@@ -64,37 +66,19 @@ export default {
         5: 'danger'
       }
       return statusMap[status]
-    },
-    statusLabelFilter(status) {
-      const statusMap = {
-        0: '待确认',
-        1: '已确认',
-        2: '生产中',
-        3: '已发货',
-        4: '已完成',
-        5: '已取消'
-      }
-      return statusMap[status]
     }
   },
   data() {
     return {
-      list: [
-        { orderNo: 'ORD20230001', customerName: '上海某科技有限公司', totalAmount: 12800.00, status: 0, expectedDeliveryDate: '2023-06-15', createTime: '2023-06-01 10:23:45' },
-        { orderNo: 'ORD20230002', customerName: '北京某贸易有限公司', totalAmount: 9680.00, status: 1, expectedDeliveryDate: '2023-06-18', createTime: '2023-06-02 14:12:32' },
-        { orderNo: 'ORD20230003', customerName: '广州某电子科技公司', totalAmount: 22560.00, status: 2, expectedDeliveryDate: '2023-06-20', createTime: '2023-06-03 09:45:11' },
-        { orderNo: 'ORD20230004', customerName: '深圳某科技有限公司', totalAmount: 15320.00, status: 3, expectedDeliveryDate: '2023-06-12', createTime: '2023-06-04 16:34:27' },
-        { orderNo: 'ORD20230005', customerName: '成都某机械有限公司', totalAmount: 31420.00, status: 4, expectedDeliveryDate: '2023-06-08', createTime: '2023-06-05 11:28:56' },
-        { orderNo: 'ORD20230006', customerName: '杭州某科技有限公司', totalAmount: 8450.00, status: 5, expectedDeliveryDate: '2023-06-25', createTime: '2023-06-06 08:17:33' }
-      ],
-      total: 6,
+      list: [],
+      total: 0,
       listLoading: false,
       listQuery: {
-        page: 1,
-        limit: 10,
+        pageNum: 1,
+        pageSize: 10,
         orderNo: '',
         status: '',
-        beginDate: '',
+        startDate: '',
         endDate: ''
       },
       dateRange: [],
@@ -108,46 +92,59 @@ export default {
       ]
     }
   },
+  created() {
+    this.getList()
+  },
   watch: {
     dateRange(val) {
       if (val && val.length === 2) {
-        this.listQuery.beginDate = val[0]
+        this.listQuery.startDate = val[0]
         this.listQuery.endDate = val[1]
       } else {
-        this.listQuery.beginDate = ''
+        this.listQuery.startDate = ''
         this.listQuery.endDate = ''
       }
     }
   },
   methods: {
     handleFilter() {
-      this.listQuery.page = 1
-      // 实际项目中这里会调用接口获取数据
+      this.listQuery.pageNum = 1
       this.getList()
     },
     getList() {
       this.listLoading = true
-      // 模拟接口调用
-      setTimeout(() => {
+      getOrderList(this.listQuery).then(response => {
+        this.list = response.data.list
+        this.total = response.data.total
         this.listLoading = false
-      }, 500)
+      }).catch(() => {
+        this.listLoading = false
+      })
     },
     handleSizeChange(val) {
-      this.listQuery.limit = val
+      this.listQuery.pageSize = val
       this.getList()
     },
     handleCurrentChange(val) {
-      this.listQuery.page = val
+      this.listQuery.pageNum = val
       this.getList()
     },
     handleCreate() {
-      this.$message.success('新增订单功能开发中')
+      this.$router.push({
+        name: 'OrderCreate'
+      })
     },
     handleEdit(row) {
-      this.$message.success(`编辑订单: ${row.orderNo}`)
+      this.$router.push({
+        name: 'OrderDetail',
+        params: { id: row.id }
+      })
     },
     handleDetail(row) {
-      this.$message.success(`查看订单详情: ${row.orderNo}`)
+      this.$router.push({
+        name: 'OrderDetail',
+        params: { id: row.id }
+      })
     },
     handleDelete(row) {
       this.$confirm('确认删除该订单吗?', '提示', {
@@ -155,7 +152,10 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        this.$message.success(`删除订单: ${row.orderNo}`)
+        deleteOrder(row.id).then(() => {
+          this.$message.success('删除成功')
+          this.getList()
+        })
       }).catch(() => {})
     }
   }

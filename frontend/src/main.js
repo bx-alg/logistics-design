@@ -10,7 +10,6 @@ Vue.config.productionTip = false
 Vue.use(ElementUI, { size: 'medium' })
 
 // 配置axios
-axios.defaults.baseURL = '/api'
 axios.defaults.timeout = 10000
 Vue.prototype.$http = axios
 

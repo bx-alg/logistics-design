@@ -5,7 +5,7 @@ import lombok.Data;
 import java.io.Serializable;
 
 /**
- * 统一响应结果
+ * 统一返回结果
  */
 @Data
 public class Result<T> implements Serializable {
@@ -28,14 +28,14 @@ public class Result<T> implements Serializable {
     private T data;
 
     /**
-     * 成功结果
+     * 成功
      */
     public static <T> Result<T> success() {
         return success(null);
     }
 
     /**
-     * 成功结果（带数据）
+     * 成功
      */
     public static <T> Result<T> success(T data) {
         Result<T> result = new Result<>();
@@ -46,14 +46,14 @@ public class Result<T> implements Serializable {
     }
 
     /**
-     * 失败结果
+     * 失败
      */
     public static <T> Result<T> error(String message) {
         return error(500, message);
     }
 
     /**
-     * 失败结果（带状态码）
+     * 失败
      */
     public static <T> Result<T> error(Integer code, String message) {
         Result<T> result = new Result<>();

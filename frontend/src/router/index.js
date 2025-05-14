@@ -27,10 +27,24 @@ const routes = [
     meta: { title: '订单管理', icon: 'el-icon-s-order' },
     children: [
       {
-        path: 'list',
+        path: '',
         name: 'OrderList',
         component: () => import('@/views/order/index'),
         meta: { title: '订单列表' }
+      },
+      {
+        path: 'create',
+        name: 'OrderCreate',
+        component: () => import('@/views/order/detail'),
+        meta: { title: '创建订单', activeMenu: '/order' },
+        hidden: true
+      },
+      {
+        path: ':id',
+        name: 'OrderDetail',
+        component: () => import('@/views/order/detail'),
+        meta: { title: '订单详情', activeMenu: '/order' },
+        hidden: true
       },
       {
         path: 'forecast',
