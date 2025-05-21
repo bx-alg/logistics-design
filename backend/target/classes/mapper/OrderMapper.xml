@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.logistics.design.mapper.OrderMapper">
+<mapper namespace="com.logistics.mapper.OrderMapper">
 
     <!-- 基础列 -->
     <sql id="Base_Column_List">
@@ -9,7 +9,7 @@
     </sql>
 
     <!-- 插入订单 -->
-    <insert id="insert" parameterType="com.logistics.design.entity.Order" useGeneratedKeys="true" keyProperty="id">
+    <insert id="insert" parameterType="com.logistics.entity.Order" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO `order` (
             order_no, customer_id, total_amount, status, address, contact_name, contact_phone,
             remark, expected_delivery_date, actual_delivery_date, create_time, update_time, deleted
@@ -20,7 +20,7 @@
     </insert>
 
     <!-- 更新订单 -->
-    <update id="update" parameterType="com.logistics.design.entity.Order">
+    <update id="update" parameterType="com.logistics.entity.Order">
         UPDATE `order`
         <set>
             <if test="totalAmount != null">total_amount = #{totalAmount},</if>
@@ -42,7 +42,7 @@
     </update>
 
     <!-- 根据ID查询订单 -->
-    <select id="selectById" resultType="com.logistics.design.entity.Order">
+    <select id="selectById" resultType="com.logistics.entity.Order">
         SELECT <include refid="Base_Column_List" /> FROM `order` WHERE id = #{id} AND deleted = 0
     </select>
 
@@ -52,7 +52,7 @@
     </update>
 
     <!-- 查询订单VO -->
-    <select id="selectOrderVOById" resultType="com.logistics.design.vo.OrderVO">
+    <select id="selectOrderVOById" resultType="com.logistics.vo.OrderVO">
         SELECT 
             o.id, o.order_no, o.customer_id, o.total_amount, o.status,
             CASE o.status
@@ -73,7 +73,7 @@
     </select>
 
     <!-- 查询订单列表 -->
-    <select id="selectOrderList" resultType="com.logistics.design.vo.OrderVO">
+    <select id="selectOrderList" resultType="com.logistics.vo.OrderVO">
         SELECT 
             o.id, o.order_no, o.customer_id, o.total_amount, o.status,
             CASE o.status
@@ -158,5 +158,46 @@
     <!-- 生成订单编号 -->
     <select id="generateOrderNo" resultType="string">
         SELECT CONCAT('DD', DATE_FORMAT(NOW(), '%Y%m%d'), LPAD(FLOOR(RAND() * 10000), 4, '0'))
+    </select>
+
+    <!-- 条件查询订单 -->
+    <select id="findOrders" resultType="com.logistics.entity.Order">
+        SELECT o.*
+        FROM `order` o
+        WHERE o.deleted = 0
+        <if test="orderNo != null and orderNo != ''">
+            AND o.order_no LIKE CONCAT('%', #{orderNo}, '%')
+        </if>
+        <if test="customerId != null">
+            AND o.customer_id = #{customerId}
+        </if>
+        <if test="status != null">
+            AND o.status = #{status}
+        </if>
+        <if test="startDate != null">
+            AND o.create_time &gt;= #{startDate}
+        </if>
+        <if test="endDate != null">
+            AND o.create_time &lt;= #{endDate}
+        </if>
+        ORDER BY o.create_time DESC
+    </select>
+    
+    <!-- 根据订单号查询订单 -->
+    <select id="findByOrderNo" resultType="com.logistics.entity.Order">
+        SELECT *
+        FROM `order`
+        WHERE order_no = #{orderNo}
+          AND deleted = 0
+        LIMIT 1
+    </select>
+    
+    <!-- 获取客户的订单列表 -->
+    <select id="findByCustomerId" resultType="com.logistics.entity.Order">
+        SELECT *
+        FROM `order`
+        WHERE customer_id = #{customerId}
+          AND deleted = 0
+        ORDER BY create_time DESC
     </select>
 </mapper> 

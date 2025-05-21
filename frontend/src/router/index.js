@@ -24,26 +24,40 @@ const routes = [
   {
     path: '/order',
     component: Layout,
+    redirect: '/order/orders',
     meta: { title: '订单管理', icon: 'el-icon-s-order' },
     children: [
       {
-        path: '',
+        path: 'orders',
         name: 'OrderList',
-        component: () => import('@/views/order/index'),
+        component: () => import('@/views/order/list'),
         meta: { title: '订单列表' }
       },
       {
         path: 'create',
         name: 'OrderCreate',
-        component: () => import('@/views/order/detail'),
-        meta: { title: '创建订单', activeMenu: '/order' },
+        component: () => import('@/views/order/create'),
+        meta: { title: '创建订单', activeMenu: '/order/orders' },
         hidden: true
       },
+
       {
-        path: ':id',
-        name: 'OrderDetail',
-        component: () => import('@/views/order/detail'),
-        meta: { title: '订单详情', activeMenu: '/order' },
+        path: 'tracking',
+        name: 'ProductionTracking',
+        component: () => import('@/views/order/tracking'),
+        meta: { title: '生产进度跟踪' }
+      },
+      {
+        path: 'production-plan',
+        name: 'ProductionPlan',
+        component: () => import('@/views/order/productionPlan'),
+        meta: { title: '排产计划管理' }
+      },
+      {
+        path: 'plan-detail/:id',
+        name: 'ProductionPlanDetail',
+        component: () => import('@/views/order/productionPlanDetail'),
+        meta: { title: '计划详情', activeMenu: '/order/production-plan' },
         hidden: true
       },
       {
@@ -51,6 +65,12 @@ const routes = [
         name: 'OrderForecast',
         component: () => import('@/views/order/forecast'),
         meta: { title: '销量预测' }
+      },
+      {
+        path: 'distribution',
+        name: 'OrderDistribution',
+        component: () => import('@/views/order/distribution'),
+        meta: { title: '订单配送地图' }
       }
     ]
   },

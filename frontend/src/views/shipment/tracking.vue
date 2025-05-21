@@ -12,28 +12,8 @@
       
       <div class="tracking-container">
         <div class="map-view" ref="mapContainer">
-          <!-- 这里实际项目中应该集成高德地图、百度地图等第三方地图API -->
-          <div class="mock-map">
-            <img src="https://gw.alipayobjects.com/mdn/rms_f5c722/afts/img/A*JNLTR6jSEeIAAAAAAAAAAABkARQnAQ" alt="地图示例" />
-            
-            <!-- 模拟物流路线 -->
-            <div class="route-line"></div>
-            
-            <!-- 模拟起点和终点标记 -->
-            <div class="map-marker start-marker">
-              <i class="el-icon-location"></i>
-              <span>发货仓库</span>
-            </div>
-            <div class="map-marker end-marker">
-              <i class="el-icon-location"></i>
-              <span>目的地</span>
-            </div>
-            
-            <!-- 模拟车辆位置 -->
-            <div class="map-marker vehicle-marker">
-              <i class="el-icon-truck"></i>
-            </div>
-          </div>
+          <!-- 高德地图容器 -->
+          <div id="amap-container" class="amap-container"></div>
         </div>
         
         <div class="tracking-info">
@@ -119,6 +99,11 @@ export default {
       searchTrackingCode: '',
       listViewType: 'all',
       currentShipment: null,
+      map: null,
+      marker: null,
+      startMarker: null,
+      endMarker: null,
+      polyline: null,
       shipmentList: [
         {
           shipmentNo: 'SHP20230001',
@@ -130,6 +115,9 @@ export default {
           progress: 45,
           isUrgent: true,
           isDelay: false,
+          fromLocation: [121.4737, 31.2304], // 上海坐标
+          toLocation: [116.4809, 39.9984], // 北京望京坐标
+          currentLocation: [115.0328, 35.7538], // 当前位置坐标
           trackInfo: [
             { time: '2023-06-05 10:25:09', content: '运输中，当前位置：河南省郑州市', icon: 'el-icon-truck' },
             { time: '2023-06-03 16:28:10', content: '快件已从上海仓库发出', icon: 'el-icon-box' },
@@ -147,6 +135,9 @@ export default {
           progress: 25,
           isUrgent: false,
           isDelay: false,
+          fromLocation: [116.4074, 39.9042], // 北京坐标
+          toLocation: [121.5980, 31.2304], // 上海张江坐标
+          currentLocation: [118.7969, 32.0603], // 南京坐标
           trackInfo: [
             { time: '2023-06-04 08:15:22', content: '运输中，当前位置：江苏省南京市', icon: 'el-icon-truck' },
             { time: '2023-06-03 18:42:15', content: '快件已从北京仓库发出', icon: 'el-icon-box' },
@@ -164,6 +155,9 @@ export default {
           progress: 65,
           isUrgent: false,
           isDelay: true,
+          fromLocation: [113.2644, 23.1291], // 广州坐标
+          toLocation: [113.9438, 22.5255], // 深圳南山坐标
+          currentLocation: [114.4126, 23.1116], // 惠州坐标
           trackInfo: [
             { time: '2023-06-05 14:35:42', content: '运输中，当前位置：广东省惠州市', icon: 'el-icon-truck' },
             { time: '2023-06-04 09:28:17', content: '快件已从广州仓库发出', icon: 'el-icon-box' },
@@ -181,6 +175,9 @@ export default {
           progress: 78,
           isUrgent: true,
           isDelay: true,
+          fromLocation: [114.0579, 22.5431], // 深圳坐标
+          toLocation: [104.0680, 30.5728], // 成都坐标
+          currentLocation: [104.6795, 31.4670], // 绵阳坐标
           trackInfo: [
             { time: '2023-06-06 12:25:33', content: '运输中，当前位置：四川省绵阳市', icon: 'el-icon-truck' },
             { time: '2023-06-04 14:48:26', content: '快件已从深圳仓库发出', icon: 'el-icon-box' },
@@ -203,7 +200,126 @@ export default {
       return this.shipmentList
     }
   },
+  mounted() {
+    // 加载高德地图脚本
+    this.loadAMapScript()
+  },
   methods: {
+    // 加载高德地图脚本
+    loadAMapScript() {
+      const key = '885e5e784f95d95af217334223071400' // 替换为您的高德地图 API Key
+      const script = document.createElement('script')
+      script.type = 'text/javascript'
+      script.async = true
+      script.src = `https://webapi.amap.com/maps?v=2.0&key=${key}&plugin=AMap.Driving`
+      script.onload = () => {
+        this.initMap()
+      }
+      document.head.appendChild(script)
+    },
+    
+    // 初始化地图
+    initMap() {
+      this.map = new AMap.Map('amap-container', {
+        zoom: 6,
+        center: [116.397428, 39.90923] // 默认中心点，中国中心
+      })
+      
+      // 如果有当前运输信息，展示路线
+      if (this.currentShipment) {
+        this.showShipmentRoute(this.currentShipment)
+      }
+    },
+    
+    // 显示物流路线
+    showShipmentRoute(shipment) {
+      // 清除之前的标记和路线
+      this.clearMapOverlays()
+      
+      // 创建起点标记
+      this.startMarker = new AMap.Marker({
+        position: shipment.fromLocation,
+        map: this.map,
+        icon: new AMap.Icon({
+          size: new AMap.Size(25, 34),
+          image: '//a.amap.com/jsapi_demos/static/demo-center/icons/poi-marker-default.png',
+          imageSize: new AMap.Size(25, 34)
+        }),
+        title: shipment.fromWarehouse
+      })
+      
+      // 创建终点标记
+      this.endMarker = new AMap.Marker({
+        position: shipment.toLocation,
+        map: this.map,
+        icon: new AMap.Icon({
+          size: new AMap.Size(25, 34),
+          image: '//a.amap.com/jsapi_demos/static/demo-center/icons/poi-marker-red.png',
+          imageSize: new AMap.Size(25, 34)
+        }),
+        title: shipment.toAddress
+      })
+      
+      // 创建车辆当前位置标记
+      this.marker = new AMap.Marker({
+        position: shipment.currentLocation,
+        map: this.map,
+        icon: new AMap.Icon({
+          size: new AMap.Size(32, 32),
+          image: '//a.amap.com/jsapi_demos/static/demo-center/icons/blue.png',
+          imageSize: new AMap.Size(32, 32)
+        }),
+        title: '运输车辆'
+      })
+      
+      // 规划路线
+      const driving = new AMap.Driving({
+        map: this.map,
+        policy: AMap.DrivingPolicy.LEAST_TIME
+      })
+      
+      driving.search(
+        shipment.fromLocation,
+        shipment.toLocation,
+        (status, result) => {
+          if (status === 'complete') {
+            // 根据起终点经纬度规划驾车导航路线
+            this.map.setFitView()
+          } else {
+            // 如果规划失败，使用直线连接
+            this.polyline = new AMap.Polyline({
+              path: [shipment.fromLocation, shipment.currentLocation, shipment.toLocation],
+              strokeColor: '#3366FF',
+              strokeWeight: 5,
+              strokeOpacity: 0.8,
+              map: this.map
+            })
+            this.map.setFitView()
+          }
+        }
+      )
+    },
+    
+    // 清除地图上的标记和路线
+    clearMapOverlays() {
+      if (this.marker) {
+        this.marker.setMap(null)
+        this.marker = null
+      }
+      if (this.startMarker) {
+        this.startMarker.setMap(null)
+        this.startMarker = null
+      }
+      if (this.endMarker) {
+        this.endMarker.setMap(null)
+        this.endMarker = null
+      }
+      if (this.polyline) {
+        this.polyline.setMap(null)
+        this.polyline = null
+      }
+    },
+    
     handleSearch() {
       if (!this.searchTrackingCode) {
         this.$message.warning('请输入运输单号')
@@ -213,13 +329,24 @@ export default {
       if (found) {
         this.currentShipment = found
         this.$message.success('查询成功')
+        
+        // 查找成功后显示路线
+        if (this.map) {
+          this.showShipmentRoute(found)
+        }
       } else {
         this.$message.error('未查询到相关运输单信息')
       }
     },
+    
     handleRowClick(row) {
       this.currentShipment = row
       this.searchTrackingCode = row.shipmentNo
+      
+      // 点击行后显示路线
+      if (this.map) {
+        this.showShipmentRoute(row)
+      }
     },
     getStatusType(status) {
       const statusMap = {
@@ -262,6 +389,10 @@ export default {
   overflow: hidden;
   position: relative;
 }
+.amap-container {
+  width: 100%;
+  height: 100%;
+}
 .tracking-info {
   width: 350px;
   margin-left: 20px;
@@ -284,61 +415,5 @@ export default {
 }
 .list-container {
   margin-top: 20px;
-}
-
-/* 模拟地图样式 */
-.mock-map {
-  width: 100%;
-  height: 100%;
-  position: relative;
-  overflow: hidden;
-}
-.mock-map img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.map-marker {
-  position: absolute;
-  background-color: #fff;
-  border-radius: 50%;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 5px;
-  z-index: 10;
-}
-.map-marker i {
-  font-size: 16px;
-}
-.map-marker span {
-  font-size: 12px;
-  margin-top: 3px;
-}
-.start-marker {
-  top: 25%;
-  left: 25%;
-  color: #409EFF;
-}
-.end-marker {
-  top: 30%;
-  right: 30%;
-  color: #F56C6C;
-}
-.vehicle-marker {
-  top: 38%;
-  left: 55%;
-  color: #67C23A;
-}
-.route-line {
-  position: absolute;
-  top: 25%;
-  left: 28%;
-  width: 45%;
-  height: 2px;
-  background-color: #409EFF;
-  transform: rotate(5deg);
-  z-index: 5;
 }
 </style> 

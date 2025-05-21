@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.logistics.design.mapper.OrderItemMapper">
+<mapper namespace="com.logistics.mapper.OrderItemMapper">
 
     <!-- 基础列 -->
     <sql id="Base_Column_List">
-        id, order_id, product_id, quantity, unit_price, total_price, create_time, update_time, deleted
+        id, order_id, product_id, quantity, unit_price, total_price, 
+        create_time, update_time, deleted
     </sql>
 
     <!-- 批量插入订单明细 -->
@@ -20,21 +21,23 @@
         </foreach>
     </insert>
 
-    <!-- 逻辑删除订单明细 -->
-    <update id="deleteByOrderId">
-        UPDATE order_item SET deleted = 1, update_time = NOW() WHERE order_id = #{orderId} AND deleted = 0
-    </update>
-
     <!-- 根据订单ID查询订单明细 -->
-    <select id="selectByOrderId" resultType="com.logistics.design.entity.OrderItem">
-        SELECT <include refid="Base_Column_List" /> 
-        FROM order_item 
-        WHERE order_id = #{orderId} AND deleted = 0
-        ORDER BY id ASC
+    <select id="findByOrderId" resultType="com.logistics.entity.OrderItem">
+        SELECT <include refid="Base_Column_List" />
+        FROM order_item
+        WHERE order_id = #{orderId}
+          AND deleted = 0
     </select>
 
+    <!-- 根据订单ID删除订单明细 -->
+    <update id="deleteByOrderId">
+        UPDATE order_item
+        SET deleted = 1
+        WHERE order_id = #{orderId}
+    </update>
+
     <!-- 根据订单ID查询订单明细视图对象 -->
-    <select id="selectItemVOByOrderId" resultType="com.logistics.design.vo.OrderItemVO">
+    <select id="selectItemVOByOrderId" resultType="com.logistics.vo.OrderItemVO">
         SELECT 
             oi.id, oi.order_id, oi.product_id, oi.quantity, oi.unit_price, oi.total_price, oi.create_time,
             p.product_name, p.product_code, p.unit
