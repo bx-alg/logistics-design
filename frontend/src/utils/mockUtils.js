@@ -165,14 +165,222 @@ export const productApi = {
 export const productionApi = {
   async list(params) {
     await delay()
-    return filterAndPaginate(mockData.productionTracking.orders, params.filters, params.pagination)
+    // 生成更多的模拟数据
+    const allOrders = [
+      {
+        id: 1,
+        orderNo: 'ORD20240301001',
+        customerName: '上海科技有限公司',
+        productName: '高精度传感器',
+        status: 0,
+        progress: 0,
+        startTime: '2024-03-01 09:00:00',
+        estimatedEndTime: '2024-03-10 18:00:00',
+        description: '待生产'
+      },
+      {
+        id: 2,
+        orderNo: 'ORD20240301002',
+        customerName: '北京智能科技公司',
+        productName: '工业控制器',
+        status: 1,
+        progress: 20,
+        startTime: '2024-03-01 10:30:00',
+        estimatedEndTime: '2024-03-12 18:00:00',
+        description: '生产准备中'
+      },
+      // 添加更多模拟数据
+      {
+        id: 3,
+        orderNo: 'ORD20240301003',
+        customerName: '广州电子科技公司',
+        productName: '智能传感器',
+        status: 1,
+        progress: 45,
+        startTime: '2024-03-02 09:00:00',
+        estimatedEndTime: '2024-03-15 18:00:00',
+        description: '生产中'
+      },
+      // ... 继续添加更多数据，确保数量与概览一致
+      // 待生产的订单
+      ...Array.from({ length: 8 }, (_, i) => ({
+        id: i + 4,
+        orderNo: `ORD202403${String(i + 4).padStart(2, '0')}`,
+        customerName: [
+          '深圳微芯科技有限公司',
+          '杭州智联电子有限公司',
+          '南京创芯半导体有限公司',
+          '武汉光电科技股份有限公司',
+          '成都智能设备有限公司',
+          '苏州精密仪器有限公司',
+          '天津新能源科技有限公司',
+          '重庆智能制造有限公司'
+        ][i],
+        productName: [
+          '高精度温度传感器',
+          '工业控制主板',
+          '智能监控系统',
+          '光电转换器',
+          '自动化控制器',
+          '精密测量仪',
+          '储能控制系统',
+          '智能生产线控制器'
+        ][i],
+        status: 0,
+        progress: 0,
+        startTime: null,
+        estimatedEndTime: '2024-03-20 18:00:00',
+        description: '待生产'
+      })),
+      // 生产中的订单
+      ...Array.from({ length: 13 }, (_, i) => ({
+        id: i + 12,
+        orderNo: `ORD202403${String(i + 12).padStart(2, '0')}`,
+        customerName: [
+          '青岛海洋科技有限公司',
+          '西安航空电子有限公司',
+          '厦门智能装备有限公司',
+          '长沙工业自动化有限公司',
+          '济南精工机械有限公司',
+          '合肥新能源设备有限公司',
+          '大连海洋仪器有限公司',
+          '郑州智能科技有限公司',
+          '无锡精密制造有限公司',
+          '东莞电子科技有限公司',
+          '宁波工业自动化有限公司',
+          '福州智能系统有限公司',
+          '昆明工业设备有限公司'
+        ][i],
+        productName: [
+          '海洋监测设备',
+          '航空电子系统',
+          '工业机器人控制器',
+          '自动化生产线',
+          '精密加工设备',
+          '新能源管理系统',
+          '海洋数据采集器',
+          '智能物流系统',
+          '精密检测设备',
+          '电子元件测试仪',
+          '工业控制终端',
+          '智能监控主机',
+          '工业传感网关'
+        ][i],
+        status: 1,
+        progress: Math.floor(Math.random() * 60) + 20,
+        startTime: '2024-03-01 09:00:00',
+        estimatedEndTime: '2024-03-25 18:00:00',
+        description: '生产进行中'
+      })),
+      // 已发货的订单
+      ...Array.from({ length: 8 }, (_, i) => ({
+        id: i + 25,
+        orderNo: `ORD202403${String(i + 25).padStart(2, '0')}`,
+        customerName: [
+          '广州智能装备股份有限公司',
+          '北京航天科技有限公司',
+          '上海工业自动化有限公司',
+          '深圳电子技术有限公司',
+          '南京智能系统有限公司',
+          '杭州数控设备有限公司',
+          '武汉光电科技有限公司',
+          '成都工业科技有限公司'
+        ][i],
+        productName: [
+          '智能装配系统',
+          '航天控制器',
+          '工业自动化主机',
+          '电子测试平台',
+          '智能控制系统',
+          '数控加工设备',
+          '光电传感器',
+          '工业物联网网关'
+        ][i],
+        status: 2,
+        progress: 100,
+        startTime: '2024-03-01 09:00:00',
+        estimatedEndTime: '2024-03-15 18:00:00',
+        description: '已发货'
+      })),
+      // 已完成的订单
+      ...Array.from({ length: 12 }, (_, i) => ({
+        id: i + 33,
+        orderNo: `ORD202403${String(i + 33).padStart(2, '0')}`,
+        customerName: [
+          '天津工业装备有限公司',
+          '重庆智能制造有限公司',
+          '西安航空仪器有限公司',
+          '苏州精密机械有限公司',
+          '长春汽车电子有限公司',
+          '青岛海洋装备有限公司',
+          '大连船舶电子有限公司',
+          '厦门自动化设备有限公司',
+          '济南机床制造有限公司',
+          '合肥新能源科技有限公司',
+          '昆山精密仪器有限公司',
+          '宁波工控系统有限公司'
+        ][i],
+        productName: [
+          '工业机器人',
+          '智能生产线',
+          '航空仪表系统',
+          '精密加工中心',
+          '汽车电子控制器',
+          '海洋监测系统',
+          '船舶导航设备',
+          '自动化控制柜',
+          '数控机床系统',
+          '储能控制器',
+          '精密测量设备',
+          '工业控制系统'
+        ][i],
+        status: 3,
+        progress: 100,
+        startTime: '2024-03-01 09:00:00',
+        estimatedEndTime: '2024-03-10 18:00:00',
+        description: '已完成'
+      }))
+    ];
+
+    // 应用过滤条件
+    let filteredData = allOrders;
+    if (params.filters) {
+      const { orderNo, customerName, status, dateRange } = params.filters;
+      filteredData = allOrders.filter(order => {
+        if (orderNo && !order.orderNo.includes(orderNo)) return false;
+        if (customerName && !order.customerName.includes(customerName)) return false;
+        if (status !== undefined && status !== '' && order.status !== status) return false;
+        if (dateRange && dateRange.length === 2) {
+          const [start, end] = dateRange;
+          const orderDate = new Date(order.startTime || order.estimatedEndTime);
+          if (start && orderDate < new Date(start)) return false;
+          if (end && orderDate > new Date(end)) return false;
+        }
+        return true;
+      });
+    }
+
+    // 分页处理
+    const { pageNum = 1, pageSize = 10 } = params.pagination || {};
+    const start = (pageNum - 1) * pageSize;
+    const end = start + pageSize;
+
+    return {
+      records: filteredData.slice(start, end),
+      total: filteredData.length
+    };
   },
-  
+
   async summary() {
     await delay()
-    return mockData.productionTracking.summary
+    return {
+      waiting: 10,    // 待生产
+      processing: 15, // 生产中
+      shipped: 8,     // 已发货
+      completed: 12   // 已完成
+    }
   },
-  
+
   async updateProgress(id, progress, description) {
     await delay()
     const order = mockData.productionTracking.orders.find(o => o.id === id)
@@ -180,7 +388,7 @@ export const productionApi = {
       order.progress = progress
       order.description = description
       if (progress === 100) {
-        order.status = 3 // 已发货
+        order.status = 3 // 已完成
       } else if (progress >= 1) {
         order.status = 2 // 生产中
       }

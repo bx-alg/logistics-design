@@ -72,15 +72,18 @@ export default {
   data() {
     return {
       list: [
-        { id: 1, code: 'S00001', name: '上海某电子科技有限公司', contactPerson: '张三', contactPhone: '13812345678', category: 'electronics', level: 5, status: 1, cooperationStartDate: '2020-01-15' },
-        { id: 2, code: 'S00002', name: '北京某机械设备有限公司', contactPerson: '李四', contactPhone: '13987654321', category: 'machinery', level: 4, status: 1, cooperationStartDate: '2020-03-22' },
-        { id: 3, code: 'S00003', name: '深圳某包装材料有限公司', contactPerson: '王五', contactPhone: '13567891234', category: 'packaging', level: 3, status: 1, cooperationStartDate: '2020-07-10' },
-        { id: 4, code: 'S00004', name: '广州某塑料制品有限公司', contactPerson: '赵六', contactPhone: '13456789012', category: 'material', level: 4, status: 2, cooperationStartDate: '2021-02-18' },
-        { id: 5, code: 'S00005', name: '杭州某电子元器件有限公司', contactPerson: '钱七', contactPhone: '13345678901', category: 'electronics', level: 5, status: 1, cooperationStartDate: '2021-05-05' },
-        { id: 6, code: 'S00006', name: '苏州某精密制造有限公司', contactPerson: '孙八', contactPhone: '13234567890', category: 'manufacturing', level: 4, status: 1, cooperationStartDate: '2021-09-12' },
-        { id: 7, code: 'S00007', name: '东莞某五金制品有限公司', contactPerson: '周九', contactPhone: '13123456789', category: 'hardware', level: 3, status: 3, cooperationStartDate: '2022-01-20' }
+        { id: 1, code: 'S00001', name: '浙江海宁布料制造有限公司', contactPerson: '张明辉', contactPhone: '13812345678', category: 'fabric', level: 5, status: 1, cooperationStartDate: '2020-01-15' },
+        { id: 2, code: 'S00002', name: '广东佛山童装面料有限公司', contactPerson: '李志强', contactPhone: '13987654321', category: 'fabric', level: 4, status: 1, cooperationStartDate: '2020-03-22' },
+        { id: 3, code: 'S00003', name: '江苏苏州童装辅料有限公司', contactPerson: '王小红', contactPhone: '13567891234', category: 'accessory', level: 3, status: 1, cooperationStartDate: '2020-07-10' },
+        { id: 4, code: 'S00004', name: '上海童装包装材料有限公司', contactPerson: '赵丽丽', contactPhone: '13456789012', category: 'packaging', level: 4, status: 2, cooperationStartDate: '2021-02-18' },
+        { id: 5, code: 'S00005', name: '杭州童装纽扣制造有限公司', contactPerson: '钱伟', contactPhone: '13345678901', category: 'accessory', level: 5, status: 1, cooperationStartDate: '2021-05-05' },
+        { id: 6, code: 'S00006', name: '义乌市童装拉链有限公司', contactPerson: '孙建国', contactPhone: '13234567890', category: 'accessory', level: 4, status: 1, cooperationStartDate: '2021-09-12' },
+        { id: 7, code: 'S00007', name: '东莞市童装印花材料有限公司', contactPerson: '周丽娜', contactPhone: '13123456789', category: 'printing', level: 3, status: 3, cooperationStartDate: '2022-01-20' },
+        { id: 8, code: 'S00008', name: '温州市童装标签制造有限公司', contactPerson: '吴海洋', contactPhone: '13876543210', category: 'accessory', level: 4, status: 1, cooperationStartDate: '2022-03-15' },
+        { id: 9, code: 'S00009', name: '常州市童装染料有限公司', contactPerson: '郑晓华', contactPhone: '13765432109', category: 'dyeing', level: 5, status: 1, cooperationStartDate: '2022-06-08' },
+        { id: 10, code: 'S00010', name: '绍兴市童装面料批发有限公司', contactPerson: '王大力', contactPhone: '13654321098', category: 'fabric', level: 4, status: 1, cooperationStartDate: '2022-09-22' }
       ],
-      total: 7,
+      total: 10,
       listLoading: false,
       listQuery: {
         page: 1,
@@ -90,12 +93,12 @@ export default {
         status: ''
       },
       categoryOptions: [
-        { label: '电子元器件', value: 'electronics' },
-        { label: '机械设备', value: 'machinery' },
+        { label: '面料供应', value: 'fabric' },
+        { label: '辅料供应', value: 'accessory' },
         { label: '包装材料', value: 'packaging' },
-        { label: '原材料', value: 'material' },
-        { label: '五金制品', value: 'hardware' },
-        { label: '精密制造', value: 'manufacturing' }
+        { label: '印花材料', value: 'printing' },
+        { label: '染色材料', value: 'dyeing' },
+        { label: '加工服务', value: 'processing' }
       ],
       statusOptions: [
         { label: '合作中', value: 1 },

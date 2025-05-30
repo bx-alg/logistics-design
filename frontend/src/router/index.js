@@ -13,13 +13,35 @@ const routes = [
   {
     path: '/',
     component: Layout,
-    redirect: '/dashboard',
-    children: [{
-      path: 'dashboard',
-      name: 'Dashboard',
-      component: () => import('@/views/dashboard/index'),
-      meta: { title: '数据总览', icon: 'el-icon-s-data' }
-    }]
+    redirect: '/data-overview',
+    children: [
+      {
+        path: 'data-overview',
+        name: 'DataOverview',
+        component: () => import('@/views/dashboard/dataOverview'),
+        meta: { title: '数据总览', icon: 'el-icon-s-data' }
+      }
+      // 大屏展示路由已删除
+    ]
+  },
+  {
+    path: '/device',
+    component: Layout,
+    meta: { title: '设备管理', icon: 'el-icon-s-platform' },
+    children: [
+      {
+        path: 'list',
+        name: 'DeviceList',
+        component: () => import('@/views/device/index'),
+        meta: { title: '设备管理' }
+      },
+      {
+        path: 'rgv-monitor',
+        name: 'RgvMonitor',
+        component: () => import('@/views/device/monitor/rgv'),
+        meta: { title: 'RGV设备监控' }
+      }
+    ]
   },
   {
     path: '/order',
@@ -38,27 +60,7 @@ const routes = [
         name: 'OrderCreate',
         component: () => import('@/views/order/create'),
         meta: { title: '创建订单', activeMenu: '/order/orders' },
-        hidden: true
-      },
-
-      {
-        path: 'tracking',
-        name: 'ProductionTracking',
-        component: () => import('@/views/order/tracking'),
-        meta: { title: '生产进度跟踪' }
-      },
-      {
-        path: 'production-plan',
-        name: 'ProductionPlan',
-        component: () => import('@/views/order/productionPlan'),
-        meta: { title: '排产计划管理' }
-      },
-      {
-        path: 'plan-detail/:id',
-        name: 'ProductionPlanDetail',
-        component: () => import('@/views/order/productionPlanDetail'),
-        meta: { title: '计划详情', activeMenu: '/order/production-plan' },
-        hidden: true
+        hidden: false
       },
       {
         path: 'forecast',
@@ -70,7 +72,38 @@ const routes = [
         path: 'distribution',
         name: 'OrderDistribution',
         component: () => import('@/views/order/distribution'),
-        meta: { title: '订单配送地图' }
+        meta: { title: '订单配送地图', hidden: true }
+      }
+    ]
+  },
+  {
+    path: '/production',
+    component: Layout,
+    redirect: '/production/plan',
+    meta: { title: '排产计划管理', icon: 'el-icon-s-management' },
+    children: [
+      {
+        path: 'plan',
+        name: 'ProductionPlan',
+        component: () => import('@/views/production/productionPlan'),
+        meta: { title: '排产计划' }
+      },
+      {
+        path: 'plan-detail/:id',
+        name: 'ProductionPlanDetail',
+        component: () => import('@/views/production/productionPlanDetail'),
+        meta: { 
+          title: '计划详情', 
+          activeMenu: '/production/plan',
+          hidden: true 
+        },
+        hidden: true
+      },
+      {
+        path: 'tracking',
+        name: 'ProductionTracking',
+        component: () => import('@/views/production/tracking'),
+        meta: { title: '生产进度跟踪' }
       }
     ]
   },
@@ -109,6 +142,23 @@ const routes = [
         name: 'InventoryAnalysis',
         component: () => import('@/views/inventory/analysis'),
         meta: { title: '库存分析' }
+      },
+      {
+        path: 'warehouse',
+        name: 'WarehouseList',
+        component: () => import('@/views/inventory/warehouse'),
+        meta: { title: '仓库列表' }
+      },
+      {
+        path: 'warehouse-detail/:id',
+        name: 'WarehouseDetail',
+        component: () => import('@/views/inventory/warehouseDetail'),
+        meta: { 
+          title: '仓库详情', 
+          activeMenu: '/inventory/warehouse',
+          hidden: true 
+        },
+        hidden: true
       }
     ]
   },
@@ -134,7 +184,15 @@ const routes = [
 ]
 
 const router = new VueRouter({
+  mode: 'history',  // 使用history模式，去掉URL中的#
+  base: process.env.BASE_URL,
   routes
 })
 
-export default router 
+// 全局前置守卫，用于处理路由跳转前的逻辑
+router.beforeEach((to, from, next) => {
+  console.log('路由跳转:', from.path, '->', to.path)
+  next()
+})
+
+export default router

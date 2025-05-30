@@ -23,7 +23,7 @@
             placeholder="请输入客户名称"
             clearable
             style="width: 200px"
-          />
+            />
         </el-form-item>
         
         <el-form-item label="订单状态" prop="status">
@@ -210,13 +210,13 @@ export default {
         this.loading = false
       }
     },
-
+    
     /** 搜索按钮操作 */
     handleQuery() {
       this.queryParams.pageNum = 1
       this.getList()
     },
-
+    
     /** 重置按钮操作 */
     resetQuery() {
       this.queryParams = {
@@ -229,30 +229,30 @@ export default {
       }
       this.getList()
     },
-
+    
     /** 新建按钮操作 */
     handleAdd() {
       this.$router.push('/order/create')
     },
-
+    
     /** 修改按钮操作 */
     handleUpdate(row) {
       this.$router.push(`/order/edit/${row.id}`)
     },
-
+    
     /** 删除按钮操作 */
     async handleDelete(row) {
       try {
         await this.$confirm('确认要删除该订单吗？', '提示', {
-          type: 'warning'
+        type: 'warning'
         })
         await this.orderStore.deleteOrder(row.id)
-        this.$message.success('删除成功')
-        this.getList()
+            this.$message.success('删除成功')
+            this.getList()
       } catch (error) {
         if (error !== 'cancel') {
           this.$message.error('删除订单失败')
-        }
+          }
       }
     },
 
@@ -298,7 +298,7 @@ export default {
       }
       return typeMap[status] || 'info'
     },
-
+    
     /** 导出按钮操作 */
     handleExport() {
       this.$confirm('是否确认导出所有订单数据?', '提示', {

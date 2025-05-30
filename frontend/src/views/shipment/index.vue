@@ -32,11 +32,37 @@
         </template>
       </el-table-column>
       <el-table-column prop="createTime" label="创建时间" align="center" width="170" />
-      <el-table-column label="操作" align="center" fixed="right" width="200">
+      <el-table-column label="操作" align="center" fixed="right" width="180">
         <template slot-scope="scope">
-          <el-button size="mini" type="success" @click="handleTrack(scope.row)">追踪</el-button>
-          <el-button size="mini" type="primary" @click="handleDetail(scope.row)">详情</el-button>
-          <el-button size="mini" type="warning" @click="handleUpdate(scope.row)" :disabled="scope.row.status === 3 || scope.row.status === 4">更新</el-button>
+          <div class="action-group">
+            <el-tooltip content="追踪物流" placement="top">
+              <el-button 
+                size="mini" 
+                type="primary"
+                plain
+                icon="el-icon-location"
+                @click="handleTrack(scope.row)">追踪</el-button>
+            </el-tooltip>
+            
+            <el-dropdown 
+              trigger="hover"
+              @command="(command) => handleCommand(command, scope.row)"
+            >
+              <el-button size="mini" type="primary" plain>
+                更多<i class="el-icon-arrow-down el-icon--right"></i>
+              </el-button>
+              <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item command="detail">
+                  <i class="el-icon-document"></i> 查看详情
+                </el-dropdown-item>
+                <el-dropdown-item 
+                  command="update"
+                  :disabled="scope.row.status === 3 || scope.row.status === 4">
+                  <i class="el-icon-edit"></i> 更新状态
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </el-dropdown>
+          </div>
         </template>
       </el-table-column>
     </el-table>
@@ -94,14 +120,16 @@ export default {
   data() {
     return {
       list: [
-        { shipmentNo: 'SHP20230001', orderNo: 'ORD20230001', carrierName: '顺丰速运', fromWarehouse: '上海仓', estimatedArrivalTime: '2023-06-15 15:00:00', status: 0, progress: 0, createTime: '2023-06-01 10:23:45' },
-        { shipmentNo: 'SHP20230002', orderNo: 'ORD20230002', carrierName: '京东物流', fromWarehouse: '北京仓', estimatedArrivalTime: '2023-06-12 10:30:00', status: 1, progress: 25, createTime: '2023-06-02 14:12:32' },
-        { shipmentNo: 'SHP20230003', orderNo: 'ORD20230003', carrierName: '中通快递', fromWarehouse: '广州仓', estimatedArrivalTime: '2023-06-13 16:45:00', status: 2, progress: 65, createTime: '2023-06-03 09:45:11' },
-        { shipmentNo: 'SHP20230004', orderNo: 'ORD20230004', carrierName: '德邦物流', fromWarehouse: '深圳仓', estimatedArrivalTime: '2023-06-10 09:15:00', status: 2, progress: 78, createTime: '2023-06-04 16:34:27' },
-        { shipmentNo: 'SHP20230005', orderNo: 'ORD20230005', carrierName: '顺丰速运', fromWarehouse: '成都仓', estimatedArrivalTime: '2023-06-07 14:00:00', status: 3, progress: 100, createTime: '2023-06-05 11:28:56' },
-        { shipmentNo: 'SHP20230006', orderNo: 'ORD20230006', carrierName: '圆通速递', fromWarehouse: '杭州仓', estimatedArrivalTime: '2023-06-25 18:30:00', status: 4, progress: 0, createTime: '2023-06-06 08:17:33' }
+        { shipmentNo: 'SHP20240501', orderNo: 'ORD20240301001', carrierName: '顺丰速运', fromWarehouse: '织里成品仓', estimatedArrivalTime: '2024-05-15 15:00:00', status: 0, progress: 0, createTime: '2024-05-01 10:23:45' },
+        { shipmentNo: 'SHP20240502', orderNo: 'ORD20240301002', carrierName: '京东物流', fromWarehouse: '织里成品仓', estimatedArrivalTime: '2024-05-12 10:30:00', status: 1, progress: 25, createTime: '2024-05-02 14:12:32' },
+        { shipmentNo: 'SHP20240503', orderNo: 'ORD20240301003', carrierName: '中通快递', fromWarehouse: '织里成品仓', estimatedArrivalTime: '2024-05-13 16:45:00', status: 2, progress: 65, createTime: '2024-05-03 09:45:11' },
+        { shipmentNo: 'SHP20240504', orderNo: 'ORD20240301004', carrierName: '德邦物流', fromWarehouse: '织里出口仓', estimatedArrivalTime: '2024-05-10 09:15:00', status: 2, progress: 78, createTime: '2024-05-04 16:34:27' },
+        { shipmentNo: 'SHP20240505', orderNo: 'ORD20240301005', carrierName: '顺丰速运', fromWarehouse: '织里婴儿服仓', estimatedArrivalTime: '2024-05-07 14:00:00', status: 3, progress: 100, createTime: '2024-05-05 11:28:56' },
+        { shipmentNo: 'SHP20240506', orderNo: 'ORD20240401001', carrierName: '圆通速递', fromWarehouse: '织里成品仓', estimatedArrivalTime: '2024-05-25 18:30:00', status: 4, progress: 0, createTime: '2024-05-06 08:17:33' },
+        { shipmentNo: 'SHP20240507', orderNo: 'ORD20240401002', carrierName: '韵达快递', fromWarehouse: '织里成品仓', estimatedArrivalTime: '2024-05-18 12:30:00', status: 2, progress: 45, createTime: '2024-05-07 09:22:15' },
+        { shipmentNo: 'SHP20240508', orderNo: 'ORD20240401003', carrierName: '百世快递', fromWarehouse: '织里成品仓', estimatedArrivalTime: '2024-05-20 14:15:00', status: 1, progress: 15, createTime: '2024-05-08 11:05:42' }
       ],
-      total: 6,
+      total: 8,
       listLoading: false,
       listQuery: {
         page: 1,
@@ -125,39 +153,42 @@ export default {
         { label: '京东物流', value: 2 },
         { label: '中通快递', value: 3 },
         { label: '德邦物流', value: 4 },
-        { label: '圆通速递', value: 5 }
+        { label: '圆通速递', value: 5 },
+        { label: '韵达快递', value: 6 },
+        { label: '百世快递', value: 7 },
+        { label: '申通快递', value: 8 }
       ],
       trackDialogVisible: false,
       activeTrackStep: 3,
       trackInfo: [
         { 
-          title: '2023-06-05 18:30:45', 
-          description: '您的快件已签收，签收人：张三，感谢您使用顺丰速运，期待再次为您服务',
+          title: '2024-05-05 18:30:45', 
+          description: '您的童装订单已签收，签收人：张小明，感谢您使用顺丰速运，期待再次为您服务',
           icon: 'el-icon-check'
         },
         { 
-          title: '2023-06-05 10:15:32', 
-          description: '快件已到达北京朝阳区望京营业点，快递员刘师傅（13812345678）正在为您派送',
+          title: '2024-05-05 10:15:32', 
+          description: '童装订单已到达上海市闵行区七莘路营业点，快递员王师傅（13812345678）正在为您派送',
           icon: 'el-icon-position'
         },
         { 
-          title: '2023-06-04 23:45:21', 
-          description: '快件已到达北京转运中心',
+          title: '2024-05-04 23:45:21', 
+          description: '童装订单已到达上海转运中心',
           icon: 'el-icon-truck'
         },
         { 
-          title: '2023-06-03 16:28:10', 
-          description: '快件已从上海仓库发出',
+          title: '2024-05-03 16:28:10', 
+          description: '童装订单已从织里婴儿服仓库发出',
           icon: 'el-icon-box'
         },
         { 
-          title: '2023-06-03 14:52:36', 
-          description: '顺丰速运已收取快件',
+          title: '2024-05-03 14:52:36', 
+          description: '顺丰速运已收取童装订单',
           icon: 'el-icon-takeaway-box'
         },
         { 
-          title: '2023-06-03 10:25:09', 
-          description: '快件信息已生成，等待揽收',
+          title: '2024-05-03 10:25:09', 
+          description: '童装订单信息已生成，等待揽收',
           icon: 'el-icon-receiving'
         }
       ]
@@ -207,6 +238,13 @@ export default {
     handleTrack(row) {
       this.trackDialogVisible = true
       // 实际项目中这里会根据运输单号调用接口获取物流轨迹
+    },
+    handleCommand(command, row) {
+      if (command === 'detail') {
+        this.handleDetail(row)
+      } else if (command === 'update') {
+        this.handleUpdate(row)
+      }
     }
   }
 }
@@ -222,5 +260,59 @@ export default {
 }
 .date-range {
   width: 350px;
+}
+
+/* 操作栏样式优化 */
+.action-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.action-group .el-button {
+  margin: 0;
+}
+
+.action-group .el-button [class*="el-icon-"] + span {
+  margin-left: 4px;
+}
+
+.el-dropdown-menu__item {
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+  padding: 8px 16px;
+}
+
+.el-dropdown-menu__item [class*="el-icon-"] {
+  margin-right: 8px;
+  font-size: 14px;
+}
+
+.el-dropdown-menu__item.is-disabled {
+  color: #c0c4cc;
+  cursor: not-allowed;
+}
+
+/* 按钮样式优化 */
+.el-button--mini {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
+.el-button--primary.is-plain {
+  background: #ecf5ff;
+}
+
+.el-button--primary.is-plain:hover,
+.el-button--primary.is-plain:focus {
+  background: #409EFF;
+  color: #fff;
+}
+
+/* tooltip样式优化 */
+.el-tooltip__popper {
+  font-size: 12px;
+  padding: 6px 12px;
 }
 </style> 

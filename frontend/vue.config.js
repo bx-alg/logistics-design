@@ -16,5 +16,13 @@ module.exports = {
         changeOrigin: true
       }
     }
+  },
+  transpileDependencies: ['pinia'],
+  configureWebpack: {
+    resolve: {
+      alias: {
+        '@': require('path').resolve(__dirname, 'src')
+      }
+    }
   }
 } 

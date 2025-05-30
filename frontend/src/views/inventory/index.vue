@@ -1,88 +1,276 @@
 <template>
   <div class="app-container">
-    <div class="filter-container">
-      <el-input v-model="listQuery.productName" placeholder="商品名称/编码" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-select v-model="listQuery.warehouseId" placeholder="仓库" clearable style="width: 150px" class="filter-item">
-        <el-option v-for="item in warehouseOptions" :key="item.value" :label="item.label" :value="item.value" />
-      </el-select>
-      <el-select v-model="listQuery.status" placeholder="库存状态" clearable style="width: 130px" class="filter-item">
-        <el-option v-for="item in statusOptions" :key="item.value" :label="item.label" :value="item.value" />
-      </el-select>
-      <el-button type="primary" icon="el-icon-search" class="filter-item" @click="handleFilter">搜索</el-button>
-      <el-button type="primary" icon="el-icon-refresh" class="filter-item" @click="handleReset">重置</el-button>
-      <el-button type="success" icon="el-icon-upload2" class="filter-item" style="margin-left: 10px;" @click="handleImport">批量导入</el-button>
-      <el-button type="warning" icon="el-icon-download" class="filter-item" @click="handleExport">导出</el-button>
+    <!-- 页面标题区域 -->
+    <div class="page-header">
+      <div class="header-content">
+        <div class="header-left">
+          <h1 class="page-title">
+            <i class="el-icon-goods"></i>
+            库存管理
+          </h1>
+          <p class="page-subtitle">实时监控商品库存状态，优化库存配置</p>
+        </div>
+        <div class="header-actions">
+          <el-button type="success" icon="el-icon-upload2" @click="handleImport">
+            批量导入
+          </el-button>
+          <el-button type="warning" icon="el-icon-download" @click="handleExport">
+            导出数据
+          </el-button>
+        </div>
+      </div>
     </div>
 
-    <el-row :gutter="20" style="margin-bottom: 20px;">
-      <el-col :span="6" v-for="(item, index) in inventorySummary" :key="index">
-        <el-card shadow="hover" class="stat-card">
-          <div class="stat-icon" :style="{ backgroundColor: item.bgColor }">
-            <i :class="item.icon"></i>
-          </div>
-          <div class="stat-content">
-            <div class="stat-title">{{ item.title }}</div>
-            <div class="stat-value">{{ item.value }}</div>
-            <div class="stat-desc">{{ item.desc }}</div>
-          </div>
-        </el-card>
-      </el-col>
-    </el-row>
-
-    <el-table :data="list" border style="width: 100%" v-loading="listLoading">
-      <el-table-column type="selection" width="55" align="center" />
-      <el-table-column prop="productCode" label="商品编码" align="center" width="130" />
-      <el-table-column label="商品信息" align="center" min-width="200">
-        <template slot-scope="scope">
-          <div class="product-info">
-            <el-avatar shape="square" size="medium" :src="scope.row.imageUrl" class="product-image"></el-avatar>
-            <div class="product-detail">
-              <div class="product-name">{{ scope.row.productName }}</div>
-              <div class="product-category">{{ scope.row.categoryName }}</div>
+    <!-- 筛选区域 -->
+    <el-card class="filter-container" shadow="hover">
+      <div class="filter-header">
+        <span class="filter-title">
+          <i class="el-icon-search"></i>
+          筛选条件
+        </span>
+      </div>
+      <div class="filter-content">
+        <el-row :gutter="20">
+          <el-col :span="6">
+            <div class="filter-item">
+              <label class="filter-label">商品信息</label>
+              <el-input 
+                v-model="listQuery.productName" 
+                placeholder="请输入商品名称或编码" 
+                clearable
+                prefix-icon="el-icon-goods"
+                @keyup.enter.native="handleFilter"
+              />
             </div>
-          </div>
-        </template>
-      </el-table-column>
-      <el-table-column prop="warehouseName" label="所在仓库" align="center" width="130" />
-      <el-table-column prop="quantity" label="库存总量" align="center" width="100" sortable />
-      <el-table-column prop="reservedQuantity" label="预留数量" align="center" width="100" sortable />
-      <el-table-column prop="availableQuantity" label="可用库存" align="center" width="100" sortable>
-        <template slot-scope="scope">
-          <span>{{ scope.row.quantity - scope.row.reservedQuantity }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column prop="inTransitQuantity" label="在途库存" align="center" width="100" sortable />
-      <el-table-column prop="minStockLevel" label="最低库存" align="center" width="100" />
-      <el-table-column prop="maxStockLevel" label="最高库存" align="center" width="100" />
-      <el-table-column label="库存状态" align="center" width="100">
-        <template slot-scope="scope">
-          <el-tag :type="getStockStatusType(scope.row)">
-            {{ getStockStatusLabel(scope.row) }}
-          </el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column prop="lastUpdateTime" label="最后更新时间" align="center" width="170" sortable />
-      <el-table-column label="操作" align="center" fixed="right" width="230">
-        <template slot-scope="scope">
-          <el-button size="mini" type="primary" @click="handleDetail(scope.row)">详情</el-button>
-          <el-button size="mini" type="success" @click="handleInbound(scope.row)">入库</el-button>
-          <el-button size="mini" type="warning" @click="handleOutbound(scope.row)">出库</el-button>
-          <el-button size="mini" type="info" @click="handleHistory(scope.row)">历史</el-button>
-        </template>
-      </el-table-column>
-    </el-table>
+          </el-col>
+          <el-col :span="5">
+            <div class="filter-item">
+              <label class="filter-label">所在仓库</label>
+              <el-select 
+                v-model="listQuery.warehouseId" 
+                placeholder="请选择仓库" 
+                clearable 
+                style="width: 100%"
+              >
+                <el-option v-for="item in warehouseOptions" :key="item.value" :label="item.label" :value="item.value" />
+              </el-select>
+            </div>
+          </el-col>
+          <el-col :span="5">
+            <div class="filter-item">
+              <label class="filter-label">库存状态</label>
+              <el-select 
+                v-model="listQuery.status" 
+                placeholder="请选择状态" 
+                clearable 
+                style="width: 100%"
+              >
+                <el-option v-for="item in statusOptions" :key="item.value" :label="item.label" :value="item.value" />
+              </el-select>
+            </div>
+          </el-col>
+          <el-col :span="8">
+            <div class="filter-actions">
+              <el-button type="primary" icon="el-icon-search" @click="handleFilter">
+                搜索
+              </el-button>
+              <el-button icon="el-icon-refresh" @click="handleReset">
+                重置
+              </el-button>
+              <el-button type="info" icon="el-icon-setting" @click="handleAdvancedFilter">
+                高级筛选
+              </el-button>
+            </div>
+          </el-col>
+        </el-row>
+      </div>
+    </el-card>
 
-    <el-pagination
-      background
-      @size-change="handleSizeChange"
-      @current-change="handleCurrentChange"
-      :current-page="listQuery.page"
-      :page-sizes="[10, 20, 30, 50]"
-      :page-size="listQuery.limit"
-      layout="total, sizes, prev, pager, next, jumper"
-      :total="total"
-      style="margin-top: 20px; text-align: right;"
-    />
+    <!-- 统计概览区域 -->
+    <div class="stats-overview">
+      <el-row :gutter="20">
+        <el-col :span="6" v-for="(item, index) in inventorySummary" :key="index">
+          <el-card shadow="hover" class="modern-stat-card" :class="`stat-card-${index + 1}`">
+            <div class="stat-card-inner">
+              <div class="stat-icon-container">
+                <div class="stat-icon-bg" :style="{ background: item.gradient }">
+                  <i :class="item.icon" class="stat-icon"></i>
+                </div>
+              </div>
+              <div class="stat-content">
+                <div class="stat-number">{{ item.value }}</div>
+                <div class="stat-title">{{ item.title }}</div>
+                <div class="stat-trend">
+                  <i :class="item.trendIcon" :style="{ color: item.trendColor }"></i>
+                  <span :style="{ color: item.trendColor }">{{ item.desc }}</span>
+                </div>
+              </div>
+            </div>
+            <div class="stat-decoration"></div>
+          </el-card>
+        </el-col>
+      </el-row>
+    </div>
+
+    <!-- 库存列表 -->
+    <el-card class="table-container" shadow="hover">
+      <div slot="header" class="table-header">
+        <div class="table-title">
+          <i class="el-icon-menu"></i>
+          <span>库存清单</span>
+          <el-tag type="info" size="mini" style="margin-left: 10px;">共 {{ total }} 件商品</el-tag>
+        </div>
+        <div class="table-tools">
+          <el-button-group>
+            <el-button size="mini" icon="el-icon-view" @click="toggleView('card')" :type="viewMode === 'card' ? 'primary' : ''">卡片</el-button>
+            <el-button size="mini" icon="el-icon-s-grid" @click="toggleView('table')" :type="viewMode === 'table' ? 'primary' : ''">表格</el-button>
+          </el-button-group>
+        </div>
+      </div>
+      
+      <el-table 
+        :data="list" 
+        v-loading="listLoading" 
+        class="modern-table"
+        :header-cell-style="{ background: '#f8f9fa', color: '#495057', fontWeight: '600' }"
+        :row-style="{ height: '65px' }"
+        stripe      >
+        <el-table-column type="selection" width="45" align="center" />
+        <el-table-column prop="productCode" label="商品编码" align="center" width="120">
+          <template slot-scope="scope">
+            <el-tag type="primary" size="small">{{ scope.row.productCode }}</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="商品信息" min-width="200" align="left">
+          <template slot-scope="scope">
+            <div class="product-info-cell">
+              <div class="product-avatar">
+                <i class="el-icon-goods"></i>
+              </div>
+              <div class="product-details">
+                <div class="product-name">{{ scope.row.productName }}</div>
+                <div class="product-meta">
+                  <el-tag size="mini" :type="getCategoryColor(scope.row.categoryName)" class="product-category">
+                    {{ scope.row.categoryName }}
+                  </el-tag>
+                </div>
+              </div>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column prop="warehouseName" label="所在仓库" width="120" align="center">
+          <template slot-scope="scope">
+            <div class="warehouse-tag">
+              <i class="el-icon-office-building"></i>
+              {{ scope.row.warehouseName }}
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column label="库存数量" width="140" align="center">
+          <template slot-scope="scope">
+            <div class="quantity-info">
+              <div class="quantity-main">
+                <span class="quantity-number">{{ scope.row.quantity }}</span>
+                <span class="quantity-unit">件</span>
+              </div>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column label="预留数量" width="100" align="center">
+          <template slot-scope="scope">
+            <div class="quantity-info reserved">
+              <span class="quantity-number">{{ scope.row.reservedQuantity }}</span>
+              <span class="quantity-unit">件</span>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column label="可用数量" width="100" align="center">
+          <template slot-scope="scope">
+            <div class="quantity-info available">
+              <span class="quantity-number">{{ scope.row.quantity - scope.row.reservedQuantity }}</span>
+              <span class="quantity-unit">件</span>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column label="在途库存" width="100" align="center">
+          <template slot-scope="scope">
+            <div class="quantity-info in-transit">
+              <span class="quantity-number">{{ scope.row.inTransitQuantity }}</span>
+              <span class="quantity-unit">件</span>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column label="最高库存" width="100" align="center">
+          <template slot-scope="scope">
+            <div class="max-stock">
+              <span class="quantity-number">{{ scope.row.maxStockLevel }}</span>
+              <span class="quantity-unit">件</span>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column label="库存状态" width="100" align="center">
+          <template slot-scope="scope">
+            <el-tag 
+              :type="getStockStatusType(scope.row)" 
+              size="small"
+              class="status-tag"
+            >
+              <i :class="getStatusIcon(scope.row)"></i>
+              {{ getStockStatusLabel(scope.row) }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="更新时间" width="140" align="center">
+          <template slot-scope="scope">
+            <div class="time-info">
+              <i class="el-icon-time"></i>
+              <span>{{ scope.row.lastUpdateTime }}</span>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" align="center" width="180" fixed="right">
+          <template slot-scope="scope">
+            <div class="action-buttons">
+              <el-button type="text" size="small" icon="el-icon-view" @click="handleDetail(scope.row)">
+                详情
+              </el-button>
+              <el-button type="text" size="small" icon="el-icon-upload2" @click="handleInbound(scope.row)">
+                入库
+              </el-button>
+              <el-button type="text" size="small" icon="el-icon-download" @click="handleOutbound(scope.row)">
+                出库
+              </el-button>
+              <el-dropdown trigger="click">
+                <el-button type="text" size="small" icon="el-icon-more"></el-button>
+                <el-dropdown-menu slot="dropdown">
+                  <el-dropdown-item icon="el-icon-document">查看详情</el-dropdown-item>
+                  <el-dropdown-item icon="el-icon-edit-outline">编辑信息</el-dropdown-item>
+                  <el-dropdown-item icon="el-icon-download">导出数据</el-dropdown-item>
+                </el-dropdown-menu>
+              </el-dropdown>
+            </div>
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <!-- 分页组件 -->
+      <div class="pagination-container">
+        <div class="pagination-info">
+          <span>显示第 {{ (listQuery.page - 1) * listQuery.limit + 1 }} - {{ Math.min(listQuery.page * listQuery.limit, total) }} 条，共 {{ total }} 条记录</span>
+        </div>
+        <el-pagination
+          background
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
+          :current-page="listQuery.page"
+          :page-sizes="[10, 20, 30, 50]"
+          :page-size="listQuery.limit"
+          layout="total, sizes, prev, pager, next, jumper"
+          :total="total"
+          class="modern-pagination"
+        />
+      </div>
+    </el-card>
 
     <!-- 入库对话框 -->
     <el-dialog title="商品入库" :visible.sync="inboundDialogVisible" width="500px">
@@ -161,15 +349,9 @@ export default {
   data() {
     return {
       listLoading: false,
-      list: [
-        { id: 1, productCode: 'P001', productName: '智能手机A', categoryName: '电子产品', imageUrl: 'https://shadow.elemecdn.com/app/element/hamburger.9cf7b091-55e9-11e9-a976-7f4d0b07eef6.png', warehouseName: '上海仓', quantity: 200, reservedQuantity: 50, inTransitQuantity: 100, minStockLevel: 50, maxStockLevel: 500, lastUpdateTime: '2023-06-02 14:23:45' },
-        { id: 2, productCode: 'P002', productName: '笔记本电脑B', categoryName: '电子产品', imageUrl: 'https://shadow.elemecdn.com/app/element/hamburger.9cf7b091-55e9-11e9-a976-7f4d0b07eef6.png', warehouseName: '北京仓', quantity: 30, reservedQuantity: 20, inTransitQuantity: 50, minStockLevel: 40, maxStockLevel: 200, lastUpdateTime: '2023-06-03 09:56:12' },
-        { id: 3, productCode: 'P003', productName: '智能音箱C', categoryName: '电子产品', imageUrl: 'https://shadow.elemecdn.com/app/element/hamburger.9cf7b091-55e9-11e9-a976-7f4d0b07eef6.png', warehouseName: '广州仓', quantity: 150, reservedQuantity: 30, inTransitQuantity: 20, minStockLevel: 40, maxStockLevel: 300, lastUpdateTime: '2023-06-04 15:37:28' },
-        { id: 4, productCode: 'P004', productName: '平板电脑D', categoryName: '电子产品', imageUrl: 'https://shadow.elemecdn.com/app/element/hamburger.9cf7b091-55e9-11e9-a976-7f4d0b07eef6.png', warehouseName: '深圳仓', quantity: 45, reservedQuantity: 40, inTransitQuantity: 30, minStockLevel: 50, maxStockLevel: 200, lastUpdateTime: '2023-06-02 11:08:33' },
-        { id: 5, productCode: 'P005', productName: '智能手表E', categoryName: '电子产品', imageUrl: 'https://shadow.elemecdn.com/app/element/hamburger.9cf7b091-55e9-11e9-a976-7f4d0b07eef6.png', warehouseName: '上海仓', quantity: 85, reservedQuantity: 25, inTransitQuantity: 15, minStockLevel: 30, maxStockLevel: 150, lastUpdateTime: '2023-06-01 16:45:19' },
-        { id: 6, productCode: 'P006', productName: '智能手环F', categoryName: '电子产品', imageUrl: 'https://shadow.elemecdn.com/app/element/hamburger.9cf7b091-55e9-11e9-a976-7f4d0b07eef6.png', warehouseName: '北京仓', quantity: 280, reservedQuantity: 80, inTransitQuantity: 50, minStockLevel: 100, maxStockLevel: 500, lastUpdateTime: '2023-06-03 10:21:57' }
-      ],
-      total: 6,
+      viewMode: 'table',
+      list: [],
+      total: 0,
       listQuery: {
         page: 1,
         limit: 10,
@@ -178,10 +360,12 @@ export default {
         status: ''
       },
       warehouseOptions: [
-        { label: '上海仓', value: 1 },
-        { label: '北京仓', value: 2 },
-        { label: '广州仓', value: 3 },
-        { label: '深圳仓', value: 4 }
+        { label: '全部仓库', value: 'all' },
+        { label: '织里成品仓', value: 'finished' },
+        { label: '织里面料仓', value: 'raw' },
+        { label: '织里辅料仓', value: 'accessory' },
+        { label: '织里婴儿服仓', value: 'baby' },
+        { label: '织里出口仓', value: 'export' }
       ],
       statusOptions: [
         { label: '充足', value: 'sufficient' },
@@ -191,10 +375,10 @@ export default {
         { label: '超量', value: 'excess' }
       ],
       inventorySummary: [
-        { title: '总库存商品数', value: '6,280', desc: '较上月增长 5.2%', icon: 'el-icon-goods', bgColor: '#ecf5ff' },
-        { title: '在途库存数', value: '265', desc: '较上月下降 2.3%', icon: 'el-icon-truck', bgColor: '#f0f9eb' },
-        { title: '库存预警数', value: '2', desc: '较上周减少 3 个', icon: 'el-icon-warning', bgColor: '#fdf6ec' },
-        { title: '库存周转率', value: '4.2次/月', desc: '较上月提高 0.3', icon: 'el-icon-refresh-right', bgColor: '#fef0f0' }
+        { title: '总库存商品数', value: '25,360', desc: '较上月增长 12.5%', icon: 'el-icon-goods', gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', trendIcon: 'el-icon-top', trendColor: '#67C23A' },
+        { title: '在途库存数', value: '3,865', desc: '较上月增长 8.3%', icon: 'el-icon-truck', gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', trendIcon: 'el-icon-top', trendColor: '#67C23A' },
+        { title: '库存预警数', value: '5', desc: '较上周增加 2 个', icon: 'el-icon-warning', gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)', trendIcon: 'el-icon-warning', trendColor: '#E6A23C' },
+        { title: '库存周转率', value: '4.2次/月', desc: '较上月提高 0.3', icon: 'el-icon-refresh-right', gradient: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)', trendIcon: 'el-icon-top', trendColor: '#67C23A' }
       ],
       inboundDialogVisible: false,
       outboundDialogVisible: false,
@@ -219,6 +403,9 @@ export default {
       }
     }
   },
+  created() {
+    this.getList()
+  },
   methods: {
     handleFilter() {
       this.listQuery.page = 1
@@ -235,10 +422,53 @@ export default {
       }
       this.getList()
     },
+    handleAdvancedFilter() {
+      // 高级筛选功能
+      this.$message.info('高级筛选功能开发中...')
+    },
+    toggleView(mode) {
+      this.viewMode = mode
+    },
+    getCategoryColor(category) {
+      const colors = {
+        '上衣': 'primary',
+        '裤子': 'success',
+        '裙装': 'warning',
+        '套装': 'info',
+        '婴儿装': 'danger',
+        '面料': '',
+        '辅料': 'info'
+      }
+      return colors[category] || 'info'
+    },
+    getStatusIcon(row) {
+      const availableQuantity = row.quantity - row.reservedQuantity
+      if (availableQuantity <= 0) {
+        return 'el-icon-close'
+      } else if (availableQuantity < row.minStockLevel) {
+        return 'el-icon-warning'
+      } else if (row.quantity > row.maxStockLevel) {
+        return 'el-icon-info'
+      } else {
+        return 'el-icon-check'
+      }
+    },
     getList() {
       this.listLoading = true
       // 模拟接口调用
       setTimeout(() => {
+        const now = this.formatDateTime(new Date())
+        this.list = [
+          { id: 1, productCode: 'P001', productName: '儿童夏季短袖T恤', categoryName: '上衣', imageUrl: 'https://via.placeholder.com/60x60.png?text=T恤', warehouseName: '织里成品仓', quantity: 3200, reservedQuantity: 850, inTransitQuantity: 1200, minStockLevel: 500, maxStockLevel: 5000, lastUpdateTime: now },
+          { id: 2, productCode: 'P002', productName: '儿童牛仔裤', categoryName: '裤子', imageUrl: 'https://via.placeholder.com/60x60.png?text=牛仔裤', warehouseName: '织里成品仓', quantity: 2800, reservedQuantity: 920, inTransitQuantity: 850, minStockLevel: 400, maxStockLevel: 4000, lastUpdateTime: now },
+          { id: 3, productCode: 'P003', productName: '女童公主连衣裙', categoryName: '裙装', imageUrl: 'https://via.placeholder.com/60x60.png?text=连衣裙', warehouseName: '织里成品仓', quantity: 1850, reservedQuantity: 630, inTransitQuantity: 520, minStockLevel: 400, maxStockLevel: 3000, lastUpdateTime: now },
+          { id: 4, productCode: 'P004', productName: '儿童运动套装', categoryName: '套装', imageUrl: 'https://via.placeholder.com/60x60.png?text=运动套装', warehouseName: '织里成品仓', quantity: 2100, reservedQuantity: 780, inTransitQuantity: 650, minStockLevel: 300, maxStockLevel: 3500, lastUpdateTime: now },
+          { id: 5, productCode: 'P005', productName: '婴儿连体衣', categoryName: '婴儿装', imageUrl: 'https://via.placeholder.com/60x60.png?text=连体衣', warehouseName: '织里婴儿服仓', quantity: 1600, reservedQuantity: 420, inTransitQuantity: 380, minStockLevel: 200, maxStockLevel: 2500, lastUpdateTime: now },
+          { id: 6, productCode: 'P006', productName: '全棉针织面料', categoryName: '面料', imageUrl: 'https://via.placeholder.com/60x60.png?text=面料', warehouseName: '织里面料仓', quantity: 5000, reservedQuantity: 1200, inTransitQuantity: 800, minStockLevel: 1000, maxStockLevel: 8000, lastUpdateTime: now },
+          { id: 7, productCode: 'P007', productName: '童装纽扣', categoryName: '辅料', imageUrl: 'https://via.placeholder.com/60x60.png?text=纽扣', warehouseName: '织里辅料仓', quantity: 50000, reservedQuantity: 15000, inTransitQuantity: 10000, minStockLevel: 8000, maxStockLevel: 100000, lastUpdateTime: now },
+          { id: 8, productCode: 'P008', productName: '儿童睡衣套装', categoryName: '套装', imageUrl: 'https://via.placeholder.com/60x60.png?text=睡衣套装', warehouseName: '织里成品仓', quantity: 1900, reservedQuantity: 580, inTransitQuantity: 420, minStockLevel: 300, maxStockLevel: 3000, lastUpdateTime: now }
+        ]
+        this.total = this.list.length
         this.listLoading = false
       }, 500)
     },
@@ -356,67 +586,405 @@ export default {
 </script>
 
 <style scoped>
-.filter-container {
-  padding-bottom: 10px;
+/* 页面标题区域 */
+.page-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
+  padding: 24px 32px;
+  margin-bottom: 24px;
+  color: white;
+  box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
 }
-.filter-item {
-  margin-right: 10px;
-  margin-bottom: 10px;
-}
-.stat-card {
+
+.header-content {
   display: flex;
-  height: 100px;
-  margin-bottom: 10px;
-}
-.stat-icon {
-  width: 80px;
-  height: 80px;
-  display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
-  border-radius: 8px;
-  margin-right: 15px;
 }
-.stat-icon i {
-  font-size: 36px;
-  color: #409EFF;
+
+.header-left {
+  flex: 1;
 }
-.stat-content {
+
+.page-title {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0 0 8px 0;
   display: flex;
-  flex-direction: column;
-  justify-content: center;
+  align-items: center;
+  gap: 12px;
 }
-.stat-title {
+
+.page-title i {
+  font-size: 32px;
+}
+
+.page-subtitle {
+  font-size: 16px;
+  opacity: 0.9;
+  margin: 0;
+  font-weight: 400;
+}
+
+.header-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.header-actions .el-button {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.header-actions .el-button:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+/* 筛选区域 */
+.filter-container {
+  margin-bottom: 24px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: none;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.filter-header {
+  padding: 16px 24px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.filter-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #495057;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-content {
+  padding: 24px;
+}
+
+.filter-item {
+  margin-bottom: 16px;
+}
+
+.filter-label {
+  display: block;
   font-size: 14px;
-  color: #909399;
+  font-weight: 500;
+  color: #495057;
   margin-bottom: 8px;
 }
-.stat-value {
-  font-size: 24px;
-  font-weight: bold;
-  color: #303133;
-  margin-bottom: 5px;
+
+.filter-actions {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  height: 100%;
+  padding-top: 24px;
 }
-.stat-desc {
-  font-size: 12px;
-  color: #67c23a;
+
+/* 统计概览区域 */
+.stats-overview {
+  margin-bottom: 24px;
 }
-.product-info {
+
+.modern-stat-card {
+  border-radius: 16px;
+  border: none;
+  overflow: hidden;
+  position: relative;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.modern-stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12);
+}
+
+.stat-card-inner {
   display: flex;
   align-items: center;
+  padding: 24px;
+  position: relative;
+  z-index: 2;
 }
-.product-image {
-  margin-right: 10px;
+
+.stat-icon-container {
+  margin-right: 20px;
 }
-.product-detail {
-  text-align: left;
+
+.stat-icon-bg {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
 }
+
+.stat-icon {
+  font-size: 28px;
+  color: white;
+}
+
+.stat-content {
+  flex: 1;
+}
+
+.stat-number {
+  font-size: 32px;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 4px;
+  line-height: 1;
+}
+
+.stat-title {
+  font-size: 16px;
+  color: #6c757d;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.stat-trend {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.stat-decoration {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 100px;
+  height: 100px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  transform: translate(30px, -30px);
+}
+
+/* 表格容器 */
+.table-container {
+  border-radius: 12px;
+  border: none;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  margin-bottom: 24px;
+}
+
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0;
+}
+
+.table-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #495057;
+}
+
+.table-tools {
+  display: flex;
+  gap: 12px;
+}
+
+/* 现代化表格 */
+.modern-table {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.modern-table .el-table__header-wrapper {
+  border-radius: 8px 8px 0 0;
+}
+
+.modern-table .el-table__body tr:hover {
+  background-color: #f8f9ff !important;
+}
+
+/* 商品信息单元格 */
+.product-info-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.product-avatar {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 16px;
+}
+
+.product-details {
+  flex: 1;
+}
+
 .product-name {
-  font-weight: bold;
-  margin-bottom: 5px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 4px;
+  font-size: 14px;
 }
+
+.product-meta {
+  display: flex;
+  gap: 8px;
+}
+
 .product-category {
   font-size: 12px;
-  color: #909399;
 }
-</style> 
+
+/* 仓库标签 */
+.warehouse-tag {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #495057;
+  font-weight: 500;
+}
+
+/* 数量信息 */
+.quantity-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.quantity-main {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+}
+
+.quantity-number {
+  font-size: 16px;
+  font-weight: 700;
+  color: #2c3e50;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+}
+
+.quantity-unit {
+  font-size: 12px;
+  color: #6c757d;
+}
+
+.quantity-info.reserved .quantity-number {
+  color: #e6a23c;
+}
+
+.quantity-info.available .quantity-number {
+  color: #67c23a;
+}
+
+.quantity-info.in-transit .quantity-number {
+  color: #409eff;
+}
+
+/* 最高库存 */
+.max-stock {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.max-stock .quantity-number {
+  color: #f56c6c;
+}
+
+/* 状态标签 */
+.status-tag {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 500;
+}
+
+/* 时间信息 */
+.time-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #6c757d;
+  font-size: 13px;
+}
+
+/* 操作按钮 */
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.action-buttons .el-button--text {
+  padding: 4px 8px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* 分页容器 */
+.pagination-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.pagination-info {
+  color: #6c757d;
+  font-size: 14px;
+}
+
+.modern-pagination {
+  margin: 0;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .header-content {
+    flex-direction: column;
+    gap: 16px;
+    text-align: center;
+  }
+  
+  .filter-content .el-row {
+    flex-direction: column;
+  }
+  
+  .filter-actions {
+    justify-content: center;
+    padding-top: 16px;
+  }
+  
+  .pagination-container {
+    flex-direction: column;
+    gap: 16px;
+  }
+}
+</style>

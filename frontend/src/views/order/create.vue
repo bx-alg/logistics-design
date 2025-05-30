@@ -240,8 +240,8 @@ export default {
     this.isCreating = path.includes('create')
     
     if (!this.isCreating && id) {
-      this.id = parseInt(id)
-      this.getOrderDetail()
+        this.id = parseInt(id)
+        this.getOrderDetail()
     } else {
       this.handleAddItem()
     }
@@ -347,7 +347,7 @@ export default {
         } else {
           this.$message.warning('请填写完整信息')
           return false
-        }
+            }
       })
     },
     resetForm() {

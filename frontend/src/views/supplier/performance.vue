@@ -197,13 +197,12 @@ export default {
       supplierId: null,
       timeRange: 'quarter',
       supplierInfo: {
-        id: 1,
         code: 'S00001',
-        name: '上海某电子科技有限公司',
-        contactPerson: '张三',
+        name: '浙江海宁布料制造有限公司',
+        contactPerson: '张明辉',
         contactPhone: '13812345678',
-        category: 'electronics',
-        categoryName: '电子元器件',
+        category: 'fabric',
+        categoryName: '面料供应',
         level: 5,
         status: 1,
         statusName: '合作中',
@@ -627,4 +626,4 @@ export default {
 .supplier-info {
   margin-bottom: 20px;
 }
-</style> 
+</style>

@@ -121,25 +121,30 @@ export default {
       trendTimeUnit: 'day',
       warehouseOptions: [
         { label: '全部仓库', value: 'all' },
-        { label: '上海仓', value: 'shanghai' },
-        { label: '北京仓', value: 'beijing' },
-        { label: '广州仓', value: 'guangzhou' },
-        { label: '深圳仓', value: 'shenzhen' }
+        { label: '织里成品仓', value: 'finished' },
+        { label: '织里面料仓', value: 'raw' },
+        { label: '织里辅料仓', value: 'accessory' },
+        { label: '织里婴儿服仓', value: 'baby' },
+        { label: '织里出口仓', value: 'export' }
       ],
       categoryOptions: [
         { label: '全部分类', value: 'all' },
-        { label: '电子产品', value: 'electronics' },
-        { label: '家用电器', value: 'appliances' },
-        { label: '办公用品', value: 'office' }
+        { label: '上衣', value: 'tops' },
+        { label: '裤子', value: 'pants' },
+        { label: '裙装', value: 'dresses' },
+        { label: '套装', value: 'suits' },
+        { label: '婴儿装', value: 'baby' },
+        { label: '面料', value: 'fabric' },
+        { label: '辅料', value: 'accessories' }
       ],
       slowMovingList: [
-        { rank: 1, productName: '智能手环J', days: 120, quantity: 158, value: 15800 },
-        { rank: 2, productName: '音响系统K', days: 95, quantity: 65, value: 32500 },
-        { rank: 3, productName: '智能门锁L', days: 85, quantity: 42, value: 12600 },
-        { rank: 4, productName: '加湿器M', days: 80, quantity: 75, value: 9750 },
-        { rank: 5, productName: '空气净化器N', days: 76, quantity: 38, value: 15200 },
-        { rank: 6, productName: '电动剃须刀O', days: 72, quantity: 126, value: 12600 },
-        { rank: 7, productName: '电热水壶P', days: 68, quantity: 96, value: 8640 }
+        { rank: 1, productName: '儿童冬季棉服', days: 120, quantity: 158, value: 23700 },
+        { rank: 2, productName: '儿童羽绒服', days: 95, quantity: 85, value: 25500 },
+        { rank: 3, productName: '儿童毛衣', days: 85, quantity: 142, value: 14200 },
+        { rank: 4, productName: '儿童秋裤', days: 80, quantity: 175, value: 8750 },
+        { rank: 5, productName: '儿童马甲', days: 76, quantity: 98, value: 7840 },
+        { rank: 6, productName: '儿童连帽外套', days: 72, quantity: 126, value: 15120 },
+        { rank: 7, productName: '儿童针织衫', days: 68, quantity: 156, value: 12480 }
       ],
       charts: {
         turnoverRateChart: null,
@@ -232,7 +237,7 @@ export default {
         legend: {
           orient: 'vertical',
           left: 10,
-          data: ['电子产品', '家用电器', '办公用品', '手机配件', '其他']
+          data: ['上衣', '裤子', '裙装', '套装', '婴儿装', '面料', '辅料']
         },
         series: [
           {
@@ -255,11 +260,13 @@ export default {
               show: false
             },
             data: [
-              { value: 42, name: '电子产品' },
-              { value: 28, name: '家用电器' },
-              { value: 15, name: '办公用品' },
-              { value: 10, name: '手机配件' },
-              { value: 5, name: '其他' }
+              { value: 35, name: '上衣' },
+              { value: 25, name: '裤子' },
+              { value: 15, name: '裙装' },
+              { value: 10, name: '套装' },
+              { value: 8, name: '婴儿装' },
+              { value: 4, name: '面料' },
+              { value: 3, name: '辅料' }
             ]
           }
         ]
